@@ -1,0 +1,157 @@
+/*
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingVNETName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the VNET to add a subnet to"
+      }
+    },
+    "newSubnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the subnet to add"
+      }
+    },
+    "newSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.2.0/24",
+      "metadata": {
+        "description": "Address space of the subnet to add"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "apiVersion": "2021-03-01",
+      "name": "[format('{0}/{1}', parameters('existingVNETName'), parameters('newSubnetName'))]",
+      "properties": {
+        "addressPrefix": "[parameters('newSubnetAddressPrefix')]"
+      }
+    }
+  ]
+}
+
+
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingVNETName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the VNET to add a subnet to"
+      }
+    },
+    "newSubnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the subnet to add"
+      }
+    },
+    "newSubnetAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Address space of the subnet to add"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "apiVersion": "2021-03-01",
+      "name": "[format('{0}/{1}', parameters('existingVNETName'), parameters('newSubnetName'))]",
+      "properties": {
+        "addressPrefix": "[parameters('newSubnetAddressPrefix')]"
+      }
+    }
+  ]
+}
+
+*/
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingVNETName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the VNET to add a subnet to"
+      }
+    },
+    "newSubnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the subnet to add"
+      }
+    },
+    "newSubnetAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Address space of the subnet to add"
+      }
+    },
+    "subnetType": {
+      "type": "string",
+      "allowedValues": [
+        "Public",
+        "Private"
+      ],
+      "metadata": {
+        "description": "Type of the subnet (Public or Private)"
+      }
+    },
+    "nsgName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Network Security Group"
+      }
+    }
+  },
+  "variables": {
+    "nsgRuleName": "[concat(parameters('newSubnetName'), '-nsgRule')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2021-03-01",
+      "name": "[parameters('nsgName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "[variables('nsgRuleName')]",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "[if(equals(parameters('subnetType'), 'Public'), 'Allow', 'Deny')]",
+              "priority": 100,
+              "direction": "Inbound",
+              "description": "[if(equals(parameters('subnetType'), 'Public'), 'Allow all inbound traffic', 'Deny all inbound traffic')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "apiVersion": "2021-03-01",
+      "name": "[format('{0}/{1}', parameters('existingVNETName'), parameters('newSubnetName'))]",
+      "properties": {
+        "addressPrefix": "[parameters('newSubnetAddressPrefix')]",
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+      ]
+    }
+  ]
+}
