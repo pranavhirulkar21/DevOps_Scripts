@@ -1,0 +1,26 @@
+
+#To create the Resource Group
+az group create --name <resource-group-name> --location <location>
+
+#To create the virtual network
+az deployment group create --resource-group <resource-group-name> --template-file <file-path>
+
+
+#To create the Subnet
+az deployment group create --resource-group <resource-group-name> --template-file <file-path>
+
+#Similar to the above command you can create any resource
+
+#Instead of passing variables/parameters in the same file of ARM template, you can store then in any file (eg parameters.json or variables.json)
+and can give the path of that file in the command
+az deployment group create --resource-group ARM-RG --template-file <template-file-path> --parameters <parameter-file-path>
+
+Parameter file example:
+{
+    "vmName": "LinuxVM2",
+    "vmSize": "Standard_B1ms",
+    "adminUsername": "azureuser",
+    "adminPassword": "YourAdminPassword"
+}
+
+

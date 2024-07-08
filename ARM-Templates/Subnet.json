@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "addSubnets",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2021-02-01",
+              "name": "[concat('VNet1/', 'Subnet2')]",
+              "properties": {
+                "addressPrefix": "10.0.2.0/24"
+              }
+            },
+            {
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "apiVersion": "2021-02-01",
+              "name": "[concat('VNet1/', 'Subnet3')]",
+              "properties": {
+                "addressPrefix": "10.0.3.0/24"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
